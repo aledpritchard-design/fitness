@@ -1,0 +1,117 @@
+You are building an iOS mobile app called “Activity Snacks” to help me be less sedentary with short, simple exercises throughout the day (“movement snacks” like 5 push-ups while the kettle boils).
+
+PRIMARY GOAL
+Create a simple, Nike-like UI that:
+1) Shows today’s selected activity snacks as a checklist
+2) Lets me tick them off quickly
+3) Shows progress: daily completion % and weekly completion rate (days with 100%)
+4) Sends hourly push notifications that suggest a randomly selected, not-yet-completed activity
+
+IMPORTANT PoC CONSTRAINTS
+- This is a Proof of Concept I can run on my own iPhone via TestFlight.
+- Build with Expo + React Native (TypeScript).
+- Use a simple backend or serverless approach that runs on Replit for configuration + debug logging.
+- Activities must be configured outside the app code (decoupled), editable in a JSON file (or simple DB table) in the backend.
+- Include clear versioning and debug tooling.
+
+FEATURES (MVP)
+A) Today screen (default)
+- Header: “Today”
+- Card: “Daily completion” with percent and progress bar
+- Checklist list of “Today’s Snacks”:
+  - Each item shows: activity name + short reps/time (e.g., “10 squats”)
+  - Tap to mark complete/incomplete
+  - Optional: tiny “info” icon that opens a short description and safety note
+- Button: “Generate Today’s Plan” (only if no plan exists for the day, otherwise hidden)
+- Button: “Reset today” (debug only, behind a toggle)
+
+B) Progress screen
+- Shows:
+  - Weekly completion rate: “X / 7 days at 100%”
+  - A simple weekly grid showing each day’s % (Mon–Sun)
+- Keep it simple and clear.
+
+C) Settings screen
+- Notification toggle (on/off)
+- “Notification window” settings: start hour and end hour (local time)
+- “Frequency” setting: hourly (MVP), stored as a setting for future expansion
+- Difficulty level: Easy (default), with room for Medium/Hard later
+- Data/export/debug:
+  - “Send debug report” (exports logs + latest config version + last 50 events)
+  - “Refresh activity catalogue” (fetch latest activities JSON from backend)
+
+ACTIVITY CATALOGUE (CONFIG)
+Create an activity catalogue that is stored in the backend and fetched by the app:
+- Each activity has fields:
+  id, name, category (strength/mobility/cardio/posture), defaultRepsOrTime, instructions (1–2 lines), contraindications (1 line), equipment (“none”), intensity (1–5), tags (e.g., “desk”, “kettle”, “stairs”)
+- The backend should serve:
+  GET /activities -> returns all activities + a catalogueVersion string
+  GET /health -> basic health check
+  POST /log -> accept debug logs from the app
+- Keep the activity list easy to edit in one JSON file on the backend (e.g., activities.json) and validate it on load.
+
+DAILY PLAN GENERATION
+- Every day, generate a “Today’s plan” by selecting activities from the catalogue.
+- The plan should be varied day-to-day:
+  - Mix categories (at least 1 mobility/posture + 1 strength, etc.)
+- Each activity has a “weight” based on intensity, reps/time, and category so that each day is roughly equal total difficulty.
+- Start with a benchmark “Daily Target” difficulty score (e.g., 12 points).
+- The generator chooses activities until target difficulty is met (within a tolerance).
+- Store today’s plan locally on device (AsyncStorage) and also optionally in backend (simple userless local is fine for PoC).
+- Completion state persists through the day.
+
+NOTIFICATIONS (HOURLY)
+- Use Expo Notifications.
+- Each hour, within the notification window, send a local notification.
+- The notification content:
+  - Picks one random activity that is not yet completed from today’s plan.
+  - If all complete, send a positive message (e.g., “Nice work — you’ve cleared today’s snacks.”)
+- Include permission request flow and a graceful fallback if permissions are denied.
+
+DATA STORAGE
+- Use local storage (AsyncStorage) for:
+  - daily plan by date
+  - completion state
+  - settings
+  - weekly history
+- Keep the structure simple and versioned (schemaVersion).
+
+DEBUGGING + VERSIONING
+- Add a hidden “Debug” panel (enabled via long-press on the app title) that shows:
+  - app version
+  - catalogueVersion last fetched
+  - last plan generation details (difficulty score, selected activities)
+  - last notification scheduled time
+  - a rolling log view (last 200 events)
+- Backend should also store logs posted from the app (in-memory is okay, but prefer a lightweight DB like SQLite or a file-based log for PoC).
+- Use Git in Replit with clear commits; include a CHANGELOG.md.
+
+PROJECT STRUCTURE
+- Create two folders:
+  /mobile (Expo React Native app)
+  /backend (Node/Express server hosting activities.json + logging)
+- Provide scripts to run both locally in Replit (or explain how to run each).
+- Ensure the mobile app points to the Replit backend URL via an environment variable.
+
+UI STYLE
+- Minimal, modern, Nike-like:
+  - clean typography
+  - plenty of whitespace
+  - simple icons
+  - no clutter
+- Use a bottom tab navigator: Today | Progress | Settings
+
+DELIVERABLES
+1) Working Expo app in /mobile
+2) Node/Express backend in /backend serving activities + logs
+3) Seed activities.json with at least 60 activities across categories (mobility/strength/cardio/posture), all safe and simple, “no equipment”
+4) Clear README with:
+   - how to run backend
+   - how to run mobile
+   - how to test notifications
+   - how to build for TestFlight (high-level steps)
+5) Include basic error handling and show user-friendly messages when backend is unavailable.
+
+NOTES
+- This is not a medical app. Add a short disclaimer: consult a professional if you have injuries; stop if pain.
+- Prioritise simplicity and reliability over advanced features.
