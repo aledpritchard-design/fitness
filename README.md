@@ -29,6 +29,7 @@ Built with Expo (React Native) for the app and a small Express backend that serv
 | Animations | `react-native-reanimated`, `react-native-gesture-handler` |
 | Backend | Express 5 + `tsx`, serving a static JSON catalogue |
 | Styling | Central theme tokens in `client/constants/theme.ts` (no CSS) |
+| Tests | Jest via `jest-expo` preset — run with `npm test` |
 
 ---
 
