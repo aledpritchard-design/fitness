@@ -7,13 +7,13 @@ import {
   RefreshControl,
   Modal,
   ScrollView,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -42,7 +42,11 @@ import {
   requestNotificationPermissions,
 } from "@/lib/notifications";
 import { getApiUrl } from "@/lib/query-client";
-import type { DailyPlan, DailyPlanActivity, Activity } from "../../shared/types";
+import type {
+  DailyPlan,
+  DailyPlanActivity,
+  Activity,
+} from "../../shared/types";
 
 export default function TodayScreen() {
   const insets = useSafeAreaInsets();
@@ -184,7 +188,8 @@ export default function TodayScreen() {
     }
   };
 
-  const completedCount = plan?.activities.filter((a) => a.completed).length ?? 0;
+  const completedCount =
+    plan?.activities.filter((a) => a.completed).length ?? 0;
   const totalCount = plan?.activities.length ?? 0;
   const completionPercentage =
     totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -216,7 +221,10 @@ export default function TodayScreen() {
       <View
         style={[
           styles.progressCard,
-          { backgroundColor: theme.backgroundDefault, borderColor: theme.border },
+          {
+            backgroundColor: theme.backgroundDefault,
+            borderColor: theme.border,
+          },
         ]}
       >
         <View style={styles.progressHeader}>
@@ -241,7 +249,7 @@ export default function TodayScreen() {
 
       {plan && plan.activities.length > 0 ? (
         <ThemedText type="h3" style={styles.sectionTitle}>
-          Today's Snacks
+          Today&apos;s Snacks
         </ThemedText>
       ) : null}
     </View>
@@ -326,10 +334,7 @@ export default function TodayScreen() {
               <ThemedText type="h2">
                 {selectedActivity?.activity.name}
               </ThemedText>
-              <Pressable
-                onPress={() => setSelectedActivity(null)}
-                hitSlop={12}
-              >
+              <Pressable onPress={() => setSelectedActivity(null)} hitSlop={12}>
                 <Feather name="x" size={24} color={theme.text} />
               </Pressable>
             </View>
@@ -381,7 +386,10 @@ export default function TodayScreen() {
                   >
                     Category
                   </ThemedText>
-                  <ThemedText type="body" style={{ textTransform: "capitalize" }}>
+                  <ThemedText
+                    type="body"
+                    style={{ textTransform: "capitalize" }}
+                  >
                     {selectedActivity?.activity.category}
                   </ThemedText>
                 </View>
@@ -403,7 +411,10 @@ export default function TodayScreen() {
                   >
                     Equipment
                   </ThemedText>
-                  <ThemedText type="body" style={{ textTransform: "capitalize" }}>
+                  <ThemedText
+                    type="body"
+                    style={{ textTransform: "capitalize" }}
+                  >
                     {selectedActivity?.activity.equipment}
                   </ThemedText>
                 </View>
@@ -413,7 +424,10 @@ export default function TodayScreen() {
         </Pressable>
       </Modal>
 
-      <DebugPanel visible={debugVisible} onClose={() => setDebugVisible(false)} />
+      <DebugPanel
+        visible={debugVisible}
+        onClose={() => setDebugVisible(false)}
+      />
     </View>
   );
 }

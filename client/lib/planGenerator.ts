@@ -1,4 +1,8 @@
-import type { Activity, DailyPlan, DailyPlanActivity } from "../../shared/types";
+import type {
+  Activity,
+  DailyPlan,
+  DailyPlanActivity,
+} from "../../shared/types";
 import { addDebugLog } from "./storage";
 
 const DAILY_TARGET_EASY = 12;
@@ -71,7 +75,10 @@ export function generateDailyPlan(
     if (currentDifficulty >= targetDifficulty - TOLERANCE) break;
     if (selectedActivities.some((s) => s.activityId === activity.id)) continue;
 
-    if (currentDifficulty + activity.intensity <= targetDifficulty + TOLERANCE) {
+    if (
+      currentDifficulty + activity.intensity <=
+      targetDifficulty + TOLERANCE
+    ) {
       selectedActivities.push({
         activityId: activity.id,
         activity,

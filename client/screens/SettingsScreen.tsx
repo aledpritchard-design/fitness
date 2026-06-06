@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, StyleSheet, ScrollView, Pressable } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Platform,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
 import { SettingsRow } from "@/components/SettingsRow";
@@ -66,7 +71,10 @@ export default function SettingsScreen() {
     if (key === "notificationsEnabled" && value === true) {
       const hasPermission = await requestNotificationPermissions();
       if (!hasPermission) {
-        const revertedSettings = { ...newSettings, notificationsEnabled: false };
+        const revertedSettings = {
+          ...newSettings,
+          notificationsEnabled: false,
+        };
         setSettings(revertedSettings);
         await saveSettings(revertedSettings);
       }
@@ -215,9 +223,10 @@ export default function SettingsScreen() {
                       ? theme.primary
                       : theme.backgroundDefault,
                   borderColor:
-                    settings.difficulty === level ? theme.primary : theme.border,
-                  opacity:
-                    level !== "easy" ? 0.5 : pressed ? 0.8 : 1,
+                    settings.difficulty === level
+                      ? theme.primary
+                      : theme.border,
+                  opacity: level !== "easy" ? 0.5 : pressed ? 0.8 : 1,
                 },
               ]}
               disabled={level !== "easy"}
@@ -225,8 +234,7 @@ export default function SettingsScreen() {
               <ThemedText
                 type="body"
                 style={{
-                  color:
-                    settings.difficulty === level ? "#FFFFFF" : theme.text,
+                  color: settings.difficulty === level ? "#FFFFFF" : theme.text,
                   fontWeight: "600",
                   textTransform: "capitalize",
                 }}
@@ -252,7 +260,9 @@ export default function SettingsScreen() {
         </ThemedText>
         <SettingsRow
           type="button"
-          label={refreshingCatalogue ? "Refreshing..." : "Refresh Activity Catalogue"}
+          label={
+            refreshingCatalogue ? "Refreshing..." : "Refresh Activity Catalogue"
+          }
           onPress={handleRefreshCatalogue}
           disabled={refreshingCatalogue}
         />
@@ -296,12 +306,16 @@ export default function SettingsScreen() {
           type="small"
           style={[styles.disclaimerText, { color: theme.textSecondary }]}
         >
-          This app is not medical advice. Consult a healthcare professional if you
-          have injuries or health concerns. Stop any exercise if you feel pain.
+          This app is not medical advice. Consult a healthcare professional if
+          you have injuries or health concerns. Stop any exercise if you feel
+          pain.
         </ThemedText>
       </View>
 
-      <DebugPanel visible={debugVisible} onClose={() => setDebugVisible(false)} />
+      <DebugPanel
+        visible={debugVisible}
+        onClose={() => setDebugVisible(false)}
+      />
     </ScrollView>
   );
 }

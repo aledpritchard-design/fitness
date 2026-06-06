@@ -78,10 +78,7 @@ export function TimePicker({
           <ThemedView style={styles.modal}>
             <View style={styles.modalHeader}>
               <ThemedText type="h3">{label}</ThemedText>
-              <Pressable
-                onPress={() => setIsModalVisible(false)}
-                hitSlop={12}
-              >
+              <Pressable onPress={() => setIsModalVisible(false)} hitSlop={12}>
                 <Feather name="x" size={24} color={theme.text} />
               </Pressable>
             </View>

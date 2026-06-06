@@ -1,6 +1,5 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Pressable } from "react-native";
 import { Image, StyleSheet, View } from "react-native";
 
 import TodayScreen from "@/screens/TodayScreen";

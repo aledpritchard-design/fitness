@@ -42,7 +42,10 @@ export function SettingsRow(props: SettingsRowProps) {
       <View
         style={[
           styles.container,
-          { backgroundColor: theme.backgroundDefault, borderColor: theme.border },
+          {
+            backgroundColor: theme.backgroundDefault,
+            borderColor: theme.border,
+          },
         ]}
       >
         <ThemedText type="body" style={styles.label}>

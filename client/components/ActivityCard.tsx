@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, Platform } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,7 +9,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -101,9 +100,7 @@ export function ActivityCard({ item, onToggle, onInfo }: ActivityCardProps) {
             styles.checkbox,
             {
               borderColor: item.completed ? theme.success : theme.border,
-              backgroundColor: item.completed
-                ? theme.success
-                : "transparent",
+              backgroundColor: item.completed ? theme.success : "transparent",
             },
             checkAnimatedStyle,
           ]}
@@ -118,10 +115,7 @@ export function ActivityCard({ item, onToggle, onInfo }: ActivityCardProps) {
         <View style={styles.titleRow}>
           <ThemedText
             type="h4"
-            style={[
-              styles.title,
-              item.completed && styles.completedText,
-            ]}
+            style={[styles.title, item.completed && styles.completedText]}
           >
             {item.activity.name}
           </ThemedText>
@@ -130,7 +124,10 @@ export function ActivityCard({ item, onToggle, onInfo }: ActivityCardProps) {
           <View
             style={[
               styles.categoryBadge,
-              { backgroundColor: getCategoryColor(item.activity.category) + "20" },
+              {
+                backgroundColor:
+                  getCategoryColor(item.activity.category) + "20",
+              },
             ]}
           >
             <ThemedText
@@ -143,10 +140,7 @@ export function ActivityCard({ item, onToggle, onInfo }: ActivityCardProps) {
               {item.activity.category}
             </ThemedText>
           </View>
-          <ThemedText
-            type="small"
-            style={{ color: theme.textSecondary }}
-          >
+          <ThemedText type="small" style={{ color: theme.textSecondary }}>
             {item.activity.defaultRepsOrTime}
           </ThemedText>
         </View>
