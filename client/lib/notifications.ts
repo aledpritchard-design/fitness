@@ -51,7 +51,10 @@ export async function scheduleHourlyNotifications(
     const incompleteActivities = activities.filter((a) => !a.completed);
 
     if (incompleteActivities.length === 0) {
-      await addDebugLog("info", "All activities completed, no notifications scheduled");
+      await addDebugLog(
+        "info",
+        "All activities completed, no notifications scheduled",
+      );
       return;
     }
 
@@ -88,7 +91,12 @@ export async function scheduleHourlyNotifications(
     }
 
     await addDebugLog("info", "Hourly notifications scheduled", {
-      count: Math.max(0, notificationEndHour - Math.max(currentHour + 1, notificationStartHour) + 1),
+      count: Math.max(
+        0,
+        notificationEndHour -
+          Math.max(currentHour + 1, notificationStartHour) +
+          1,
+      ),
     });
   } catch (error) {
     await addDebugLog("error", "Failed to schedule notifications", {

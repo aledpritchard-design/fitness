@@ -18,6 +18,7 @@ const STORAGE_KEYS = {
   SCHEMA_VERSION: "schema_version",
 } as const;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CURRENT_SCHEMA_VERSION = 1;
 const MAX_DEBUG_LOGS = 200;
 
@@ -122,7 +123,9 @@ export async function getWeeklyHistory(): Promise<WeeklyHistory[]> {
 export async function getSettings(): Promise<AppSettings> {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEYS.SETTINGS);
-    return data ? { ...DEFAULT_SETTINGS, ...JSON.parse(data) } : DEFAULT_SETTINGS;
+    return data
+      ? { ...DEFAULT_SETTINGS, ...JSON.parse(data) }
+      : DEFAULT_SETTINGS;
   } catch (error) {
     console.error("Failed to get settings:", error);
     return DEFAULT_SETTINGS;

@@ -92,13 +92,19 @@ export function DebugPanel({ visible, onClose }: DebugPanelProps) {
                 ]}
               >
                 <View style={styles.infoRow}>
-                  <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                  <ThemedText
+                    type="small"
+                    style={{ color: theme.textSecondary }}
+                  >
                     App Version
                   </ThemedText>
                   <ThemedText type="body">{appVersion}</ThemedText>
                 </View>
                 <View style={styles.infoRow}>
-                  <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                  <ThemedText
+                    type="small"
+                    style={{ color: theme.textSecondary }}
+                  >
                     Catalogue Version
                   </ThemedText>
                   <ThemedText type="body">
@@ -147,7 +153,10 @@ export function DebugPanel({ visible, onClose }: DebugPanelProps) {
                           [{log.level.toUpperCase()}]
                         </Text>
                         <Text
-                          style={[styles.logTime, { color: theme.textSecondary }]}
+                          style={[
+                            styles.logTime,
+                            { color: theme.textSecondary },
+                          ]}
                         >
                           {formatTimestamp(log.timestamp)}
                         </Text>
@@ -157,7 +166,10 @@ export function DebugPanel({ visible, onClose }: DebugPanelProps) {
                       </Text>
                       {log.data ? (
                         <Text
-                          style={[styles.logData, { color: theme.textSecondary }]}
+                          style={[
+                            styles.logData,
+                            { color: theme.textSecondary },
+                          ]}
                         >
                           {JSON.stringify(log.data, null, 2)}
                         </Text>
