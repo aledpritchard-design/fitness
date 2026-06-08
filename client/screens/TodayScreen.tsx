@@ -41,7 +41,11 @@ import {
   scheduleCompletionNotification,
   requestNotificationPermissions,
 } from "@/lib/notifications";
-import { getApiUrl } from "@/lib/query-client";
+import {
+  BUNDLED_ACTIVITIES,
+  BUNDLED_CATALOGUE_VERSION,
+  refreshFromNetwork,
+} from "@/lib/catalogue";
 import type {
   DailyPlan,
   DailyPlanActivity,
@@ -67,17 +71,21 @@ export default function TodayScreen() {
 
   const loadData = useCallback(async () => {
     try {
-      const [cachedActivities, todayPlan] = await Promise.all([
+      let [cachedActivities, todayPlan] = await Promise.all([
         getCachedActivities(),
         getDailyPlan(today),
       ]);
 
       if (cachedActivities.length === 0) {
-        await fetchActivitiesFromServer();
-      } else {
-        setActivities(cachedActivities);
+        await cacheActivities(BUNDLED_ACTIVITIES, BUNDLED_CATALOGUE_VERSION);
+        cachedActivities = BUNDLED_ACTIVITIES;
+        await addDebugLog("info", "Seeded from bundled catalogue", {
+          count: BUNDLED_ACTIVITIES.length,
+          version: BUNDLED_CATALOGUE_VERSION,
+        });
       }
 
+      setActivities(cachedActivities);
       setPlan(todayPlan);
     } catch (error) {
       console.error("Failed to load data:", error);
@@ -89,23 +97,18 @@ export default function TodayScreen() {
     }
   }, [today]);
 
-  const fetchActivitiesFromServer = async () => {
-    try {
-      const baseUrl = getApiUrl();
-      const response = await fetch(new URL("/api/activities", baseUrl).href);
-      if (response.ok) {
-        const data = await response.json();
-        setActivities(data.activities);
-        await cacheActivities(data.activities, data.catalogueVersion);
-        await addDebugLog("info", "Activities fetched from server", {
-          count: data.activities.length,
-          version: data.catalogueVersion,
-        });
-      }
-    } catch (error) {
-      console.error("Failed to fetch activities:", error);
-      await addDebugLog("error", "Failed to fetch activities", {
-        error: String(error),
+  const tryRefreshFromServer = async (): Promise<void> => {
+    const result = await refreshFromNetwork();
+    if (result.ok && result.activities && result.version) {
+      setActivities(result.activities);
+      await cacheActivities(result.activities, result.version);
+      await addDebugLog("info", "Activities refreshed from server", {
+        count: result.activities.length,
+        version: result.version,
+      });
+    } else {
+      await addDebugLog("info", "Server refresh skipped", {
+        message: result.message,
       });
     }
   };
@@ -116,23 +119,24 @@ export default function TodayScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchActivitiesFromServer();
-    await loadData();
+    await tryRefreshFromServer();
+    const todayPlan = await getDailyPlan(today);
+    setPlan(todayPlan);
     setRefreshing(false);
   };
 
   const handleGeneratePlan = async () => {
-    if (activities.length === 0) {
-      await fetchActivitiesFromServer();
-      const cached = await getCachedActivities();
-      if (cached.length === 0) return;
-      setActivities(cached);
+    let currentActivities = activities;
+    if (currentActivities.length === 0) {
+      await cacheActivities(BUNDLED_ACTIVITIES, BUNDLED_CATALOGUE_VERSION);
+      currentActivities = BUNDLED_ACTIVITIES;
+      setActivities(currentActivities);
     }
 
     setGenerating(true);
     try {
       const settings = await getSettings();
-      const newPlan = generateDailyPlan(activities, today, settings.difficulty);
+      const newPlan = generateDailyPlan(currentActivities, today, settings.difficulty);
       await saveDailyPlan(newPlan);
       setPlan(newPlan);
 

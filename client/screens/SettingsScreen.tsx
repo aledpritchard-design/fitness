@@ -31,6 +31,7 @@ import {
   cancelAllNotifications,
 } from "@/lib/notifications";
 import { getApiUrl } from "@/lib/query-client";
+import { refreshFromNetwork } from "@/lib/catalogue";
 import type { AppSettings } from "../../shared/types";
 import { DEFAULT_SETTINGS } from "../../shared/types";
 
@@ -92,24 +93,25 @@ export default function SettingsScreen() {
   const handleRefreshCatalogue = async () => {
     setRefreshingCatalogue(true);
     try {
-      const baseUrl = getApiUrl();
-      const response = await fetch(new URL("/api/activities", baseUrl).href);
-      if (response.ok) {
-        const data = await response.json();
-        await cacheActivities(data.activities, data.catalogueVersion);
+      const result = await refreshFromNetwork();
+      if (result.ok && result.activities && result.version) {
+        await cacheActivities(result.activities, result.version);
         await addDebugLog("info", "Catalogue refreshed", {
-          count: data.activities.length,
-          version: data.catalogueVersion,
+          count: result.activities.length,
+          version: result.version,
         });
-        if (Platform.OS !== "web") {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
+      } else {
+        await addDebugLog("info", "Catalogue refresh skipped", {
+          message: result.message,
+        });
       }
-    } catch (error) {
-      console.error("Failed to refresh catalogue:", error);
-      await addDebugLog("error", "Failed to refresh catalogue", {
-        error: String(error),
-      });
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(
+          result.ok
+            ? Haptics.NotificationFeedbackType.Success
+            : Haptics.NotificationFeedbackType.Warning,
+        );
+      }
     } finally {
       setRefreshingCatalogue(false);
     }
@@ -117,6 +119,7 @@ export default function SettingsScreen() {
 
   const handleSendDebugReport = async () => {
     try {
+      const baseUrl = getApiUrl();
       const [logs, catalogueVersion] = await Promise.all([
         getDebugLogs(),
         getCatalogueVersion(),
@@ -130,7 +133,16 @@ export default function SettingsScreen() {
         timestamp: new Date().toISOString(),
       };
 
-      const baseUrl = getApiUrl();
+      if (!baseUrl) {
+        await addDebugLog("info", "Debug report saved locally (no server configured)", {
+          catalogueVersion,
+        });
+        if (Platform.OS !== "web") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        }
+        return;
+      }
+
       await fetch(new URL("/api/log", baseUrl).href, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
