@@ -37,7 +37,27 @@ export async function requestNotificationPermissions(): Promise<boolean> {
   }
 }
 
-export async function scheduleHourlyNotifications(
+export async function getNotificationPermissionStatus(): Promise<
+  "granted" | "denied" | "undetermined"
+> {
+  try {
+    if (Platform.OS === "web") return "denied";
+    const { status } = await Notifications.getPermissionsAsync();
+    return status as "granted" | "denied" | "undetermined";
+  } catch {
+    return "denied";
+  }
+}
+
+/**
+ * Schedule repeating daily notifications across the notification window.
+ * Uses CALENDAR triggers with repeats:true so reminders fire every day
+ * at each hour in the window, even when the app is closed.
+ *
+ * Total triggers = (endHour - startHour + 1), capped at 16 — well under
+ * the iOS pending-notification limit of 64.
+ */
+export async function scheduleNotifications(
   activities: DailyPlanActivity[],
   settings: AppSettings,
 ): Promise<void> {
@@ -58,24 +78,22 @@ export async function scheduleHourlyNotifications(
       return;
     }
 
-    const now = new Date();
-    const currentHour = now.getHours();
     const { notificationStartHour, notificationEndHour } = settings;
 
-    for (
-      let hour = Math.max(currentHour + 1, notificationStartHour);
-      hour <= notificationEndHour;
-      hour++
-    ) {
+    // Cap the window to stay safely under the iOS 64-notification limit.
+    const MAX_SLOTS = 16;
+    const windowHours = Math.min(
+      notificationEndHour - notificationStartHour + 1,
+      MAX_SLOTS,
+    );
+
+    let scheduled = 0;
+    for (let i = 0; i < windowHours; i++) {
+      const hour = notificationStartHour + i;
       const randomActivity =
         incompleteActivities[
           Math.floor(Math.random() * incompleteActivities.length)
         ];
-
-      const triggerDate = new Date();
-      triggerDate.setHours(hour, 0, 0, 0);
-
-      if (triggerDate <= now) continue;
 
       await Notifications.scheduleNotificationAsync({
         content: {
@@ -84,19 +102,18 @@ export async function scheduleHourlyNotifications(
           data: { activityId: randomActivity.activityId },
         },
         trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.DATE,
-          date: triggerDate,
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          repeats: true,
+          hour,
+          minute: 0,
         },
       });
+      scheduled++;
     }
 
-    await addDebugLog("info", "Hourly notifications scheduled", {
-      count: Math.max(
-        0,
-        notificationEndHour -
-          Math.max(currentHour + 1, notificationStartHour) +
-          1,
-      ),
+    await addDebugLog("info", "Repeating daily notifications scheduled", {
+      count: scheduled,
+      window: `${notificationStartHour}:00–${notificationEndHour}:00`,
     });
   } catch (error) {
     await addDebugLog("error", "Failed to schedule notifications", {
