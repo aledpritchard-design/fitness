@@ -114,7 +114,9 @@ export default function TodayScreen() {
     }
   };
 
-  useNotifications({ onNewDay: loadData });
+  const { permissionStatus, openSettings } = useNotifications({
+    onNewDay: loadData,
+  });
 
   useEffect(() => {
     loadData();
@@ -229,6 +231,33 @@ export default function TodayScreen() {
 
   const renderHeader = () => (
     <View style={styles.header}>
+      {permissionStatus === "denied" ? (
+        <View
+          style={[
+            styles.permissionBanner,
+            {
+              backgroundColor: theme.backgroundDefault,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <View style={styles.permissionHeader}>
+            <Feather name="bell-off" size={18} color={theme.textSecondary} />
+            <ThemedText type="h4" style={styles.permissionTitle}>
+              Notifications are off
+            </ThemedText>
+          </View>
+          <ThemedText
+            type="small"
+            style={[styles.permissionText, { color: theme.textSecondary }]}
+          >
+            Reminders can&apos;t reach you until notifications are turned on for
+            this app in Settings.
+          </ThemedText>
+          <Button onPress={openSettings}>Open Settings</Button>
+        </View>
+      ) : null}
+
       <View
         style={[
           styles.progressCard,
@@ -454,6 +483,24 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: Spacing.md,
+  },
+  permissionBanner: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.lg,
+    gap: Spacing.md,
+  },
+  permissionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  permissionTitle: {
+    flex: 1,
+  },
+  permissionText: {
+    marginTop: -Spacing.xs,
   },
   progressCard: {
     padding: Spacing.lg,
