@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.activitysnacks.app"
+      "bundleIdentifier": "com.activitysnacks.app",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {

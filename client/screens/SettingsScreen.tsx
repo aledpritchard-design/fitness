@@ -134,9 +134,13 @@ export default function SettingsScreen() {
       };
 
       if (!baseUrl) {
-        await addDebugLog("info", "Debug report saved locally (no server configured)", {
-          catalogueVersion,
-        });
+        await addDebugLog(
+          "info",
+          "Debug report saved locally (no server configured)",
+          {
+            catalogueVersion,
+          },
+        );
         if (Platform.OS !== "web") {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         }

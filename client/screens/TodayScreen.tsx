@@ -37,10 +37,11 @@ import {
 } from "@/lib/storage";
 import { generateDailyPlan } from "@/lib/planGenerator";
 import {
-  scheduleHourlyNotifications,
+  scheduleNotifications,
   scheduleCompletionNotification,
   requestNotificationPermissions,
 } from "@/lib/notifications";
+import { useNotifications } from "@/hooks/useNotifications";
 import {
   BUNDLED_ACTIVITIES,
   BUNDLED_CATALOGUE_VERSION,
@@ -113,6 +114,8 @@ export default function TodayScreen() {
     }
   };
 
+  useNotifications({ onNewDay: loadData });
+
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -136,14 +139,18 @@ export default function TodayScreen() {
     setGenerating(true);
     try {
       const settings = await getSettings();
-      const newPlan = generateDailyPlan(currentActivities, today, settings.difficulty);
+      const newPlan = generateDailyPlan(
+        currentActivities,
+        today,
+        settings.difficulty,
+      );
       await saveDailyPlan(newPlan);
       setPlan(newPlan);
 
       if (settings.notificationsEnabled) {
         const hasPermission = await requestNotificationPermissions();
         if (hasPermission) {
-          await scheduleHourlyNotifications(newPlan.activities, settings);
+          await scheduleNotifications(newPlan.activities, settings);
         }
       }
 
@@ -178,7 +185,7 @@ export default function TodayScreen() {
       } else {
         const settings = await getSettings();
         if (settings.notificationsEnabled) {
-          await scheduleHourlyNotifications(updatedPlan.activities, settings);
+          await scheduleNotifications(updatedPlan.activities, settings);
         }
       }
     }
