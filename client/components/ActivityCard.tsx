@@ -3,6 +3,7 @@ import { View, StyleSheet, Pressable, Platform } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  useReducedMotion,
   withSpring,
   withSequence,
   WithSpringConfig,
@@ -21,17 +22,26 @@ interface ActivityCardProps {
   onInfo: (item: DailyPlanActivity) => void;
 }
 
-const springConfig: WithSpringConfig = {
+// Tight spring for card press — no overshoot so it feels planted
+const cardPressSpring: WithSpringConfig = {
   damping: 15,
   mass: 0.3,
   stiffness: 150,
   overshootClamping: true,
 };
 
+// Lively spring for the checkbox pop — small overshoot makes completion feel earned
+const checkBounceSpring: WithSpringConfig = {
+  damping: 10,
+  mass: 0.2,
+  stiffness: 200,
+};
+
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function ActivityCard({ item, onToggle, onInfo }: ActivityCardProps) {
   const { theme } = useTheme();
+  const reducedMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const checkScale = useSharedValue(1);
 
@@ -44,11 +54,11 @@ export function ActivityCard({ item, onToggle, onInfo }: ActivityCardProps) {
   }));
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.97, springConfig);
+    if (!reducedMotion) scale.value = withSpring(0.97, cardPressSpring);
   };
 
   const handlePressOut = () => {
-    scale.value = withSpring(1, springConfig);
+    if (!reducedMotion) scale.value = withSpring(1, cardPressSpring);
   };
 
   const handleToggle = () => {
@@ -56,10 +66,12 @@ export function ActivityCard({ item, onToggle, onInfo }: ActivityCardProps) {
     if (newCompleted && Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    checkScale.value = withSequence(
-      withSpring(1.3, springConfig),
-      withSpring(1, springConfig),
-    );
+    if (!reducedMotion) {
+      checkScale.value = withSequence(
+        withSpring(1.4, checkBounceSpring),
+        withSpring(1, checkBounceSpring),
+      );
+    }
     onToggle(item.activityId, newCompleted);
   };
 
@@ -92,6 +104,9 @@ export function ActivityCard({ item, onToggle, onInfo }: ActivityCardProps) {
         },
         animatedStyle,
       ]}
+      accessibilityRole="checkbox"
+      accessibilityLabel={`${item.activity.name}, ${item.activity.defaultRepsOrTime}`}
+      accessibilityState={{ checked: item.completed }}
       testID={`activity-card-${item.activityId}`}
     >
       <View style={styles.leftSection}>
