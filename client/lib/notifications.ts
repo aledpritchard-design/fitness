@@ -67,7 +67,11 @@ export function deriveNotificationHours(
   const step = FREQUENCY_STEP[frequency];
   const MAX_SLOTS = 16;
   const hours: number[] = [];
-  for (let hour = startHour; hour <= endHour && hours.length < MAX_SLOTS; hour += step) {
+  for (
+    let hour = startHour;
+    hour <= endHour && hours.length < MAX_SLOTS;
+    hour += step
+  ) {
     hours.push(hour);
   }
   return hours;
@@ -103,7 +107,11 @@ export async function scheduleNotifications(
     }
 
     const { notificationStartHour, notificationEndHour, frequency } = settings;
-    const hours = deriveNotificationHours(notificationStartHour, notificationEndHour, frequency);
+    const hours = deriveNotificationHours(
+      notificationStartHour,
+      notificationEndHour,
+      frequency,
+    );
 
     for (const hour of hours) {
       const randomActivity =
