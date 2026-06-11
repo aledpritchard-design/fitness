@@ -16,6 +16,7 @@ const STORAGE_KEYS = {
   ACTIVITIES_CACHE: "activities_cache",
   CATALOGUE_VERSION: "catalogue_version",
   SCHEMA_VERSION: "schema_version",
+  ONBOARDING_SEEN: "onboarding_seen",
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -207,6 +208,31 @@ export async function getCatalogueVersion(): Promise<string | null> {
   } catch (error) {
     console.error("Failed to get catalogue version:", error);
     return null;
+  }
+}
+
+export async function hasSeenOnboarding(): Promise<boolean> {
+  try {
+    const value = await AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_SEEN);
+    return value === "true";
+  } catch {
+    return false;
+  }
+}
+
+export async function markOnboardingSeen(): Promise<void> {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_SEEN, "true");
+  } catch (error) {
+    console.error("Failed to mark onboarding seen:", error);
+  }
+}
+
+export async function resetOnboarding(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEYS.ONBOARDING_SEEN);
+  } catch (error) {
+    console.error("Failed to reset onboarding:", error);
   }
 }
 
