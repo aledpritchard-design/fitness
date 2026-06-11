@@ -1,7 +1,12 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import type { DailyPlanActivity, AppSettings } from "../../shared/types";
-import { addDebugLog } from "./storage";
+import { addDebugLog, getSettings } from "./storage";
+
+export const REMINDER_CATEGORY_ID = "REMINDER";
+export const SNOOZE_ACTION_ID = "snooze";
+export const SNOOZE_MINUTES = 15;
+const SNOOZE_NOTIFICATION_ID = "snooze-reminder";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -12,6 +17,78 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
+/**
+ * Register the REMINDER notification category with a "Snooze 15 min" action.
+ * Must be called before scheduling any reminder notifications so iOS shows the
+ * action button. Safe to call on every app launch.
+ */
+export async function setupReminderCategory(): Promise<void> {
+  if (Platform.OS === "web") return;
+  try {
+    await Notifications.setNotificationCategoryAsync(REMINDER_CATEGORY_ID, [
+      {
+        identifier: SNOOZE_ACTION_ID,
+        buttonTitle: "Snooze 15 min",
+        options: { isDestructive: false, isAuthenticationRequired: false },
+      },
+    ]);
+  } catch (error) {
+    await addDebugLog("error", "Failed to set up reminder category", {
+      error: String(error),
+    });
+  }
+}
+
+/**
+ * Schedule a one-shot snooze notification based on an existing reminder.
+ * Uses a fixed identifier (SNOOZE_NOTIFICATION_ID) so a second snooze tap
+ * overwrites the pending one — no duplicate or orphaned notifications.
+ * Drops silently if the snooze time would fall outside the notification window.
+ */
+export async function scheduleSnoozeNotification(
+  notification: Notifications.Notification,
+): Promise<void> {
+  if (Platform.OS === "web") return;
+  try {
+    const settings = await getSettings();
+    if (!settings.notificationsEnabled) return;
+
+    const snoozeTime = new Date(Date.now() + SNOOZE_MINUTES * 60 * 1000);
+    if (snoozeTime.getHours() >= settings.notificationEndHour) {
+      await addDebugLog("info", "Snooze skipped — outside notification window");
+      return;
+    }
+
+    // Cancel any existing pending snooze before scheduling to avoid duplicates.
+    await Notifications.cancelScheduledNotificationAsync(
+      SNOOZE_NOTIFICATION_ID,
+    ).catch(() => {});
+
+    await Notifications.scheduleNotificationAsync({
+      identifier: SNOOZE_NOTIFICATION_ID,
+      content: {
+        title: notification.request.content.title,
+        body: notification.request.content.body,
+        data: notification.request.content.data ?? {},
+        categoryIdentifier: REMINDER_CATEGORY_ID,
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: SNOOZE_MINUTES * 60,
+        repeats: false,
+      },
+    });
+
+    await addDebugLog("info", "Snooze scheduled", {
+      delayMinutes: SNOOZE_MINUTES,
+    });
+  } catch (error) {
+    await addDebugLog("error", "Failed to schedule snooze", {
+      error: String(error),
+    });
+  }
+}
 
 export async function requestNotificationPermissions(): Promise<boolean> {
   try {
@@ -124,6 +201,7 @@ export async function scheduleNotifications(
           title: "Time for a snack!",
           body: `${randomActivity.activity.name} - ${randomActivity.activity.defaultRepsOrTime}`,
           data: { activityId: randomActivity.activityId },
+          categoryIdentifier: REMINDER_CATEGORY_ID,
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
