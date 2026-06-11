@@ -14,7 +14,11 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Fonts } from "@/constants/theme";
-import { getDebugLogs, getCatalogueVersion, resetOnboarding } from "@/lib/storage";
+import {
+  getDebugLogs,
+  getCatalogueVersion,
+  resetOnboarding,
+} from "@/lib/storage";
 import type { DebugLog } from "../../shared/types";
 
 interface DebugPanelProps {

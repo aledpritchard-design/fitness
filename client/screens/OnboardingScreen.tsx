@@ -36,7 +36,9 @@ const STEPS = [
   },
 ] as const;
 
-export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
+export default function OnboardingScreen({
+  onComplete,
+}: OnboardingScreenProps) {
   const { theme } = useTheme();
   const [step, setStep] = useState(0);
 
@@ -109,8 +111,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               style={[
                 styles.dot,
                 {
-                  backgroundColor:
-                    i === step ? theme.primary : theme.border,
+                  backgroundColor: i === step ? theme.primary : theme.border,
                   width: i === step ? 20 : 8,
                 },
               ]}
