@@ -14,7 +14,11 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Fonts } from "@/constants/theme";
-import { getDebugLogs, getCatalogueVersion } from "@/lib/storage";
+import {
+  getDebugLogs,
+  getCatalogueVersion,
+  resetOnboarding,
+} from "@/lib/storage";
 import type { DebugLog } from "../../shared/types";
 
 interface DebugPanelProps {
@@ -26,6 +30,7 @@ export function DebugPanel({ visible, onClose }: DebugPanelProps) {
   const { theme } = useTheme();
   const [logs, setLogs] = useState<DebugLog[]>([]);
   const [catalogueVersion, setCatalogueVersion] = useState<string | null>(null);
+  const [onboardingResetDone, setOnboardingResetDone] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -112,6 +117,28 @@ export function DebugPanel({ visible, onClose }: DebugPanelProps) {
                   </ThemedText>
                 </View>
               </View>
+            </View>
+
+            <View style={styles.section}>
+              <ThemedText type="h4" style={styles.sectionTitle}>
+                Actions
+              </ThemedText>
+              <Pressable
+                onPress={async () => {
+                  await resetOnboarding();
+                  setOnboardingResetDone(true);
+                }}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: theme.backgroundDefault },
+                ]}
+              >
+                <ThemedText type="small">
+                  {onboardingResetDone
+                    ? "Onboarding reset — restart app to see it"
+                    : "Reset onboarding"}
+                </ThemedText>
+              </Pressable>
             </View>
 
             <View style={styles.section}>
@@ -216,6 +243,10 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   infoCard: {
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+  },
+  actionButton: {
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
   },
