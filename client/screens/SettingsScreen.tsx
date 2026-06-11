@@ -15,6 +15,7 @@ import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
 import { SettingsRow } from "@/components/SettingsRow";
 import { TimePicker } from "@/components/TimePicker";
+import { FrequencyPicker } from "@/components/FrequencyPicker";
 import { DebugPanel } from "@/components/DebugPanel";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -215,7 +216,10 @@ export default function SettingsScreen() {
           minValue={settings.notificationStartHour + 1}
           maxValue={23}
         />
-        <SettingsRow type="value" label="Frequency" value="Hourly" />
+        <FrequencyPicker
+          value={settings.frequency}
+          onChange={(value) => updateSetting("frequency", value)}
+        />
       </View>
 
       <View style={styles.section}>

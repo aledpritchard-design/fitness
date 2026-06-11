@@ -49,13 +49,41 @@ export async function getNotificationPermissionStatus(): Promise<
   }
 }
 
+const FREQUENCY_STEP: Record<AppSettings["frequency"], number> = {
+  hourly: 1,
+  "every-2h": 2,
+  "every-3h": 3,
+};
+
+/**
+ * Derive the trigger hours for the given window and frequency.
+ * Capped at 16 to stay well under the iOS 64-notification limit.
+ */
+export function deriveNotificationHours(
+  startHour: number,
+  endHour: number,
+  frequency: AppSettings["frequency"],
+): number[] {
+  const step = FREQUENCY_STEP[frequency];
+  const MAX_SLOTS = 16;
+  const hours: number[] = [];
+  for (
+    let hour = startHour;
+    hour <= endHour && hours.length < MAX_SLOTS;
+    hour += step
+  ) {
+    hours.push(hour);
+  }
+  return hours;
+}
+
 /**
  * Schedule repeating daily notifications across the notification window.
  * Uses CALENDAR triggers with repeats:true so reminders fire every day
- * at each hour in the window, even when the app is closed.
+ * at each scheduled hour in the window, even when the app is closed.
  *
- * Total triggers = (endHour - startHour + 1), capped at 16 — well under
- * the iOS pending-notification limit of 64.
+ * Total triggers = deriveNotificationHours(...).length, capped at 16 —
+ * well under the iOS pending-notification limit of 64.
  */
 export async function scheduleNotifications(
   activities: DailyPlanActivity[],
@@ -78,18 +106,14 @@ export async function scheduleNotifications(
       return;
     }
 
-    const { notificationStartHour, notificationEndHour } = settings;
-
-    // Cap the window to stay safely under the iOS 64-notification limit.
-    const MAX_SLOTS = 16;
-    const windowHours = Math.min(
-      notificationEndHour - notificationStartHour + 1,
-      MAX_SLOTS,
+    const { notificationStartHour, notificationEndHour, frequency } = settings;
+    const hours = deriveNotificationHours(
+      notificationStartHour,
+      notificationEndHour,
+      frequency,
     );
 
-    let scheduled = 0;
-    for (let i = 0; i < windowHours; i++) {
-      const hour = notificationStartHour + i;
+    for (const hour of hours) {
       const randomActivity =
         incompleteActivities[
           Math.floor(Math.random() * incompleteActivities.length)
@@ -108,11 +132,11 @@ export async function scheduleNotifications(
           minute: 0,
         },
       });
-      scheduled++;
     }
 
     await addDebugLog("info", "Repeating daily notifications scheduled", {
-      count: scheduled,
+      count: hours.length,
+      frequency,
       window: `${notificationStartHour}:00–${notificationEndHour}:00`,
     });
   } catch (error) {

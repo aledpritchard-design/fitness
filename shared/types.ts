@@ -35,7 +35,7 @@ export interface AppSettings {
   notificationsEnabled: boolean;
   notificationStartHour: number;
   notificationEndHour: number;
-  frequency: "hourly";
+  frequency: "hourly" | "every-2h" | "every-3h";
   difficulty: "easy" | "medium" | "hard";
   debugMode: boolean;
 }
