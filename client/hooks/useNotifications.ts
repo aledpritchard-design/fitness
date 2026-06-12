@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { AppState, AppStateStatus, Linking, Platform } from "react-native";
+import * as Notifications from "expo-notifications";
 import { getTodayDateString } from "@/lib/storage";
 import {
   requestNotificationPermissions,
   getNotificationPermissionStatus,
+  setupReminderCategory,
+  scheduleSnoozeNotification,
+  SNOOZE_ACTION_ID,
 } from "@/lib/notifications";
 
 type PermissionStatus = "granted" | "denied" | "undetermined";
@@ -60,7 +64,12 @@ export function useNotifications({
       if (!cancelled) setPermissionStatus(status);
     };
 
-    // Request permission once on mount (non-blocking), then record the result.
+    // Request permission and set up the reminder category once on mount.
+    // Also process any snooze action that fired while the app was killed:
+    // iOS launches the app in the background to handle the action; we pick up
+    // the response via getLastNotificationResponseAsync() before the listener
+    // is active. A freshness check (< 2 min) prevents re-processing stale
+    // responses when the user re-opens the app normally later.
     const init = async () => {
       if (AppState.currentState === "active") {
         await requestNotificationPermissions().catch(() => {
@@ -68,6 +77,18 @@ export function useNotifications({
         });
       }
       await syncStatus();
+      await setupReminderCategory();
+
+      if (Platform.OS !== "web") {
+        const pending = await Notifications.getLastNotificationResponseAsync();
+        const isSnooze = pending?.actionIdentifier === SNOOZE_ACTION_ID;
+        const isFresh =
+          pending &&
+          Date.now() - pending.notification.date * 1000 < 2 * 60 * 1000;
+        if (isSnooze && isFresh) {
+          await scheduleSnoozeNotification(pending.notification);
+        }
+      }
     };
     init();
 
@@ -94,9 +115,25 @@ export function useNotifications({
       },
     );
 
+    // Foreground and background snooze action handler.
+    // Fires when the user taps "Snooze 15 min" while the app is visible or
+    // backgrounded. The killed-state path is handled above via
+    // getLastNotificationResponseAsync().
+    const responseSubscription =
+      Platform.OS !== "web"
+        ? Notifications.addNotificationResponseReceivedListener(
+            async (response) => {
+              if (response.actionIdentifier === SNOOZE_ACTION_ID) {
+                await scheduleSnoozeNotification(response.notification);
+              }
+            },
+          )
+        : null;
+
     return () => {
       cancelled = true;
       subscription.remove();
+      responseSubscription?.remove();
     };
   }, [onNewDay]);
 
