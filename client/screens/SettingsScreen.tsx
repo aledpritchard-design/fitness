@@ -250,6 +250,14 @@ export default function SettingsScreen() {
                 },
               ]}
               disabled={level !== "easy"}
+              accessibilityRole="button"
+              accessibilityState={{
+                selected: settings.difficulty === level,
+                disabled: level !== "easy",
+              }}
+              accessibilityLabel={
+                level !== "easy" ? `${level}, coming soon` : level
+              }
             >
               <ThemedText
                 type="body"

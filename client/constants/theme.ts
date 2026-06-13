@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 
-const primaryOrange = "#FF6B35";
+// Darkened from #FF6B35 to achieve WCAG AA 3:1 contrast on #F8F8F8 (light card background)
+const primaryOrange = "#E85D28";
 const successGreen = "#00C853";
 const destructiveRed = "#E53935";
 

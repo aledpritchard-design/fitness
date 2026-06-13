@@ -12,6 +12,15 @@ interface WeeklyGridProps {
 }
 
 const DAY_NAMES = ["M", "T", "W", "T", "F", "S", "S"];
+const DAY_FULL_NAMES = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 export function WeeklyGrid({ weekDates, history }: WeeklyGridProps) {
   const { theme } = useTheme();
@@ -46,14 +55,30 @@ export function WeeklyGrid({ weekDates, history }: WeeklyGridProps) {
         const isFuture = date > today;
         const circleStyle = getCircleStyle(percentage);
 
+        const dayLabel = DAY_FULL_NAMES[index];
+        const statusLabel = isFuture
+          ? "no data yet"
+          : percentage === 100
+            ? "complete"
+            : percentage > 0
+              ? `${percentage}% done`
+              : "no activity";
+        const todayLabel = isToday ? ", today" : "";
+
         return (
-          <View key={date} style={styles.dayContainer}>
+          <View
+            key={date}
+            style={styles.dayContainer}
+            accessible={true}
+            accessibilityLabel={`${dayLabel}${todayLabel}: ${statusLabel}`}
+          >
             <ThemedText
               type="small"
               style={[
                 styles.dayName,
                 { color: isToday ? theme.primary : theme.textSecondary },
               ]}
+              importantForAccessibility="no"
             >
               {DAY_NAMES[index]}
             </ThemedText>
@@ -78,6 +103,10 @@ export function WeeklyGrid({ weekDates, history }: WeeklyGridProps) {
                           : theme.textSecondary,
                   },
                 ]}
+                adjustsFontSizeToFit
+                minimumFontScale={0.6}
+                numberOfLines={1}
+                importantForAccessibility="no"
               >
                 {isFuture ? "-" : percentage > 0 ? `${percentage}` : "0"}
               </ThemedText>
