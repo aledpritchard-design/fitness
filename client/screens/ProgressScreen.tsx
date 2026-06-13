@@ -9,8 +9,18 @@ import { WeeklyGrid } from "@/components/WeeklyGrid";
 import { EmptyState } from "@/components/EmptyState";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
-import { getWeeklyHistory, getWeekDates } from "@/lib/storage";
-import type { WeeklyHistory } from "../../shared/types";
+import {
+  getWeeklyHistory,
+  getWeekDates,
+  getStreakData,
+  getMilestoneRecords,
+  MILESTONES,
+} from "@/lib/storage";
+import type {
+  WeeklyHistory,
+  StreakData,
+  MilestoneRecord,
+} from "../../shared/types";
 
 export default function ProgressScreen() {
   const insets = useSafeAreaInsets();
@@ -19,6 +29,13 @@ export default function ProgressScreen() {
   const { theme } = useTheme();
 
   const [history, setHistory] = useState<WeeklyHistory[]>([]);
+  const [streakData, setStreakData] = useState<StreakData>({
+    currentStreak: 0,
+    bestStreak: 0,
+  });
+  const [milestoneRecords, setMilestoneRecords] = useState<MilestoneRecord[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -26,8 +43,14 @@ export default function ProgressScreen() {
 
   const loadHistory = useCallback(async () => {
     try {
-      const data = await getWeeklyHistory();
+      const [data, streak, milestones] = await Promise.all([
+        getWeeklyHistory(),
+        getStreakData(),
+        getMilestoneRecords(),
+      ]);
       setHistory(data);
+      setStreakData(streak);
+      setMilestoneRecords(milestones);
     } catch (error) {
       console.error("Failed to load history:", error);
     } finally {
@@ -118,6 +141,35 @@ export default function ProgressScreen() {
             </ThemedText>
           </View>
 
+          <View
+            style={[
+              styles.streakCard,
+              {
+                backgroundColor: theme.backgroundDefault,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>
+              Streak
+            </ThemedText>
+            <View style={styles.streakContent}>
+              <ThemedText
+                type="h1"
+                style={[styles.bigNumber, { color: theme.primary }]}
+              >
+                {streakData.currentStreak}
+              </ThemedText>
+              <ThemedText type="h3" style={{ color: theme.textSecondary }}>
+                {streakData.currentStreak === 1 ? " day" : " days"}
+              </ThemedText>
+            </View>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>
+              Best: {streakData.bestStreak}{" "}
+              {streakData.bestStreak === 1 ? "day" : "days"}
+            </ThemedText>
+          </View>
+
           <View style={styles.section}>
             <ThemedText type="h3" style={styles.sectionTitle}>
               Weekly Overview
@@ -134,6 +186,42 @@ export default function ProgressScreen() {
               <WeeklyGrid weekDates={weekDates} history={history} />
             </View>
           </View>
+
+          {milestoneRecords.length > 0 && (
+            <View style={styles.section}>
+              <ThemedText type="h3" style={styles.sectionTitle}>
+                Milestones
+              </ThemedText>
+              {MILESTONES.filter((m) =>
+                milestoneRecords.some((r) => r.id === m.id),
+              ).map((m) => {
+                const record = milestoneRecords.find((r) => r.id === m.id)!;
+                return (
+                  <View
+                    key={m.id}
+                    style={[
+                      styles.milestoneRow,
+                      {
+                        backgroundColor: theme.backgroundDefault,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  >
+                    <ThemedText type="body">{m.label}</ThemedText>
+                    <ThemedText
+                      type="small"
+                      style={{ color: theme.textSecondary }}
+                    >
+                      {new Date(record.unlockedAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </ThemedText>
+                  </View>
+                );
+              })}
+            </View>
+          )}
 
           <View style={styles.section}>
             <ThemedText type="h3" style={styles.sectionTitle}>
@@ -227,6 +315,26 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
     gap: Spacing.sm,
     marginVertical: Spacing.sm,
+  },
+  streakCard: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.lg,
+  },
+  streakContent: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginVertical: Spacing.sm,
+  },
+  milestoneRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginBottom: Spacing.sm,
   },
   bigNumber: {
     fontSize: 48,

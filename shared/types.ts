@@ -40,6 +40,16 @@ export interface AppSettings {
   debugMode: boolean;
 }
 
+export interface StreakData {
+  currentStreak: number;
+  bestStreak: number;
+}
+
+export interface MilestoneRecord {
+  id: string;
+  unlockedAt: string;
+}
+
 export interface DebugLog {
   timestamp: string;
   level: "info" | "warn" | "error";
