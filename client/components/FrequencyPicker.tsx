@@ -40,6 +40,9 @@ export function FrequencyPicker({ value, onChange }: FrequencyPickerProps) {
             opacity: pressed ? 0.7 : 1,
           },
         ]}
+        accessibilityRole="button"
+        accessibilityLabel={`Frequency: ${selectedLabel}`}
+        accessibilityHint="Double tap to change"
       >
         <ThemedText type="body" style={styles.label}>
           Frequency
@@ -70,7 +73,12 @@ export function FrequencyPicker({ value, onChange }: FrequencyPickerProps) {
           <ThemedView style={styles.modal}>
             <View style={styles.modalHeader}>
               <ThemedText type="h3">Frequency</ThemedText>
-              <Pressable onPress={() => setIsModalVisible(false)} hitSlop={12}>
+              <Pressable
+                onPress={() => setIsModalVisible(false)}
+                hitSlop={12}
+                accessibilityLabel="Close"
+                accessibilityRole="button"
+              >
                 <Feather name="x" size={24} color={theme.text} />
               </Pressable>
             </View>
@@ -93,6 +101,9 @@ export function FrequencyPicker({ value, onChange }: FrequencyPickerProps) {
                             : "transparent",
                     },
                   ]}
+                  accessibilityRole="menuitem"
+                  accessibilityState={{ selected: option.value === value }}
+                  accessibilityLabel={option.label}
                 >
                   <ThemedText
                     type="body"

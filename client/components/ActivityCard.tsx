@@ -169,6 +169,8 @@ export function ActivityCard({ item, onToggle, onInfo }: ActivityCardProps) {
         ]}
         hitSlop={12}
         testID={`info-button-${item.activityId}`}
+        accessibilityLabel={`More info about ${item.activity.name}`}
+        accessibilityRole="button"
       >
         <Feather name="info" size={18} color={theme.textSecondary} />
       </Pressable>

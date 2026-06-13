@@ -266,6 +266,8 @@ export default function TodayScreen() {
             borderColor: theme.border,
           },
         ]}
+        accessible={true}
+        accessibilityLabel={`Daily completion: ${completionPercentage}%. ${completedCount} of ${totalCount} activities completed.`}
       >
         <View style={styles.progressHeader}>
           <ThemedText type="small" style={{ color: theme.textSecondary }}>
@@ -374,7 +376,12 @@ export default function TodayScreen() {
               <ThemedText type="h2">
                 {selectedActivity?.activity.name}
               </ThemedText>
-              <Pressable onPress={() => setSelectedActivity(null)} hitSlop={12}>
+              <Pressable
+                onPress={() => setSelectedActivity(null)}
+                hitSlop={12}
+                accessibilityLabel="Close"
+                accessibilityRole="button"
+              >
                 <Feather name="x" size={24} color={theme.text} />
               </Pressable>
             </View>

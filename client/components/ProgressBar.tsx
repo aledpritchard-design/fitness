@@ -3,6 +3,7 @@ import { View, StyleSheet } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  useReducedMotion,
   withTiming,
   Easing,
 } from "react-native-reanimated";
@@ -17,14 +18,20 @@ interface ProgressBarProps {
 
 export function ProgressBar({ progress, height = 8 }: ProgressBarProps) {
   const { theme } = useTheme();
+  const reducedMotion = useReducedMotion();
   const animatedWidth = useSharedValue(0);
 
   useEffect(() => {
-    animatedWidth.value = withTiming(Math.min(Math.max(progress, 0), 100), {
-      duration: 500,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [progress, animatedWidth]);
+    const target = Math.min(Math.max(progress, 0), 100);
+    if (reducedMotion) {
+      animatedWidth.value = target;
+    } else {
+      animatedWidth.value = withTiming(target, {
+        duration: 500,
+        easing: Easing.out(Easing.cubic),
+      });
+    }
+  }, [progress, animatedWidth, reducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     width: `${animatedWidth.value}%`,
@@ -32,6 +39,10 @@ export function ProgressBar({ progress, height = 8 }: ProgressBarProps) {
 
   return (
     <View
+      accessible={true}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 0, max: 100, now: progress }}
+      accessibilityLabel={`${progress}% complete`}
       style={[
         styles.container,
         { height, backgroundColor: theme.backgroundSecondary },

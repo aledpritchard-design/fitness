@@ -48,6 +48,9 @@ export function TimePicker({
             opacity: pressed ? 0.7 : 1,
           },
         ]}
+        accessibilityRole="button"
+        accessibilityLabel={`${label}: ${formatHour(value)}`}
+        accessibilityHint="Double tap to change"
       >
         <ThemedText type="body" style={styles.label}>
           {label}
@@ -78,7 +81,12 @@ export function TimePicker({
           <ThemedView style={styles.modal}>
             <View style={styles.modalHeader}>
               <ThemedText type="h3">{label}</ThemedText>
-              <Pressable onPress={() => setIsModalVisible(false)} hitSlop={12}>
+              <Pressable
+                onPress={() => setIsModalVisible(false)}
+                hitSlop={12}
+                accessibilityLabel="Close"
+                accessibilityRole="button"
+              >
                 <Feather name="x" size={24} color={theme.text} />
               </Pressable>
             </View>
@@ -101,6 +109,9 @@ export function TimePicker({
                             : "transparent",
                     },
                   ]}
+                  accessibilityRole="menuitem"
+                  accessibilityState={{ selected: hour === value }}
+                  accessibilityLabel={formatHour(hour)}
                 >
                   <ThemedText
                     type="body"

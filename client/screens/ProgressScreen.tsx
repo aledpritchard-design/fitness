@@ -119,14 +119,23 @@ export default function ProgressScreen() {
             <ThemedText type="small" style={{ color: theme.textSecondary }}>
               This Week
             </ThemedText>
-            <View style={styles.summaryContent}>
+            <View
+              style={styles.summaryContent}
+              accessible={true}
+              accessibilityLabel={`${perfectDays} of 7 days at 100%`}
+            >
               <ThemedText
                 type="h1"
                 style={[styles.bigNumber, { color: theme.success }]}
+                importantForAccessibility="no"
               >
                 {perfectDays}
               </ThemedText>
-              <ThemedText type="h3" style={{ color: theme.textSecondary }}>
+              <ThemedText
+                type="h3"
+                style={{ color: theme.textSecondary }}
+                importantForAccessibility="no"
+              >
                 / 7 days at 100%
               </ThemedText>
             </View>
@@ -153,18 +162,31 @@ export default function ProgressScreen() {
             <ThemedText type="small" style={{ color: theme.textSecondary }}>
               Streak
             </ThemedText>
-            <View style={styles.streakContent}>
+            <View
+              style={styles.streakContent}
+              accessible={true}
+              accessibilityLabel={`Current streak: ${streakData.currentStreak} ${streakData.currentStreak === 1 ? "day" : "days"}`}
+            >
               <ThemedText
                 type="h1"
                 style={[styles.bigNumber, { color: theme.primary }]}
+                importantForAccessibility="no"
               >
                 {streakData.currentStreak}
               </ThemedText>
-              <ThemedText type="h3" style={{ color: theme.textSecondary }}>
+              <ThemedText
+                type="h3"
+                style={{ color: theme.textSecondary }}
+                importantForAccessibility="no"
+              >
                 {streakData.currentStreak === 1 ? " day" : " days"}
               </ThemedText>
             </View>
-            <ThemedText type="small" style={{ color: theme.textSecondary }}>
+            <ThemedText
+              type="small"
+              style={{ color: theme.textSecondary }}
+              accessibilityLabel={`Best streak: ${streakData.bestStreak} ${streakData.bestStreak === 1 ? "day" : "days"}`}
+            >
               Best: {streakData.bestStreak}{" "}
               {streakData.bestStreak === 1 ? "day" : "days"}
             </ThemedText>
@@ -206,6 +228,8 @@ export default function ProgressScreen() {
                         borderColor: theme.border,
                       },
                     ]}
+                    accessible={true}
+                    accessibilityLabel={`${m.label}, unlocked ${new Date(record.unlockedAt).toLocaleDateString("en-US", { month: "long", day: "numeric" })}`}
                   >
                     <ThemedText type="body">{m.label}</ThemedText>
                     <ThemedText
@@ -237,6 +261,8 @@ export default function ProgressScreen() {
                     borderColor: theme.border,
                   },
                 ]}
+                accessible={true}
+                accessibilityLabel={`${new Date(entry.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}: ${entry.completedActivities} of ${entry.totalActivities} activities, ${entry.completionPercentage}%`}
               >
                 <View>
                   <ThemedText type="body">
